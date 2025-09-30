@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
@@ -16,11 +16,13 @@ export default function Login() {
   });
   const [showPassword, setShowPassword] = useState(false);
 
-  // Redirect if already authenticated
-  if (isAuthenticated) {
-    setLocation('/dashboard');
-    return null;
-  }
+  // Redirect if already authenticated or if auth is disabled for development
+  useEffect(() => {
+    const disableAuth = import.meta.env.VITE_DISABLE_AUTH === 'true';
+    if (isAuthenticated || disableAuth) {
+      setLocation('/dashboard');
+    }
+  }, [isAuthenticated, setLocation]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,7 +142,7 @@ export default function Login() {
 
         {/* Footer */}
         <div className="text-center text-sm text-muted-foreground">
-          <p>© 2025 National Information Technology Development Agency</p>
+          <p>© 2025 Logic League ( National Information Technology Development Agency )</p>
           <p>All rights reserved</p>
         </div>
       </div>

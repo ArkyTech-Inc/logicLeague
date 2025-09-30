@@ -100,10 +100,10 @@ export default function Layout({ children }: LayoutProps) {
                     className="flex items-center space-x-3"
                     data-testid="button-user-menu"
                   >
-                    <div className="text-right text-sm">
-                      <p className="font-medium text-foreground">{user?.username}</p>
-                      <p className="text-muted-foreground capitalize">{user?.role.replace('_', ' ')}</p>
-                    </div>
+                      <div className="text-right text-sm">
+                        <p className="font-medium text-foreground">{user?.username}</p>
+                        <p className="text-muted-foreground capitalize">{user?.role ? user.role.replace('_', ' ') : ''}</p>
+                      </div>
                     <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
                       <User className="h-4 w-4 text-primary-foreground" />
                     </div>

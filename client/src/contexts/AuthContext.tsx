@@ -19,6 +19,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
 
   useEffect(() => {
+    const disableAuth = import.meta.env.VITE_DISABLE_AUTH === 'true';
+    if (disableAuth) {
+      // inject a dev user so ProtectedRoute permits access
+      setUser({ id: 'dev-user', username: 'dev', email: 'dev@local', role: 'admin' } as any);
+      setIsLoading(false);
+      return;
+    }
+
     const token = localStorage.getItem('auth_token');
     if (token) {
       apiClient

@@ -8,6 +8,9 @@ import { useAuth } from "@/hooks/useAuth";
 import Layout from "@/components/Layout";
 import Dashboard from "@/pages/dashboard";
 import Login from "@/pages/login";
+import KPIs from "@/pages/kpis";
+import Reports from "@/pages/reports";
+import Analytics from "@/pages/analytics";
 import NotFound from "@/pages/not-found";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -38,6 +41,21 @@ function Router() {
       <Route path="/dashboard">
         <ProtectedRoute>
           <Dashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/kpis">
+        <ProtectedRoute>
+          <KPIs />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/reports">
+        <ProtectedRoute>
+          <Reports />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/analytics">
+        <ProtectedRoute>
+          <Analytics />
         </ProtectedRoute>
       </Route>
       <Route path="/">
