@@ -10,7 +10,7 @@ export const users = pgTable("users", {
   email: varchar("email", { length: 255 }).notNull().unique(),
   password: text("password").notNull(),
   role: varchar("role", { length: 50 }).notNull().default("user"), // admin, department_owner, executive, user
-  departmentId: uuid("department_id"),
+  departmentId: uuid("department_id").references(() => departments.id),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -21,7 +21,7 @@ export const departments = pgTable("departments", {
   name: varchar("name", { length: 255 }).notNull(),
   code: varchar("code", { length: 10 }).notNull().unique(), // DLCB, DEID, DGCS, DEGS
   description: text("description"),
-  headUserId: uuid("head_user_id"),
+  headUserId: uuid("head_user_id").references(() => users.id),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -40,8 +40,8 @@ export const kpis = pgTable("kpis", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
-  pillarId: uuid("pillar_id").notNull(),
-  departmentId: uuid("department_id").notNull(),
+  pillarId: uuid("pillar_id").notNull().references(() => pillars.id),
+  departmentId: uuid("department_id").notNull().references(() => departments.id),
   unit: varchar("unit", { length: 50 }).notNull(), // percentage, count, ratio
   dataType: varchar("data_type", { length: 20 }).notNull(), // numeric, boolean
   frequency: varchar("frequency", { length: 20 }).notNull(), // monthly, quarterly, yearly
@@ -52,7 +52,7 @@ export const kpis = pgTable("kpis", {
 
 export const targets = pgTable("targets", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  kpiId: uuid("kpi_id").notNull(),
+  kpiId: uuid("kpi_id").notNull().references(() => kpis.id),
   year: integer("year").notNull(),
   quarter: integer("quarter"), // nullable for yearly targets
   targetValue: decimal("target_value", { precision: 10, scale: 2 }).notNull(),
@@ -67,15 +67,15 @@ export const targets = pgTable("targets", {
 
 export const actuals = pgTable("actuals", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  kpiId: uuid("kpi_id").notNull(),
-  targetId: uuid("target_id").notNull(),
+  kpiId: uuid("kpi_id").notNull().references(() => kpis.id),
+  targetId: uuid("target_id").notNull().references(() => targets.id),
   actualValue: decimal("actual_value", { precision: 10, scale: 2 }).notNull(),
-  submittedBy: uuid("submitted_by").notNull(),
+  submittedBy: uuid("submitted_by").notNull().references(() => users.id),
   submissionDate: timestamp("submission_date").defaultNow().notNull(),
   evidenceFiles: jsonb("evidence_files").$type<string[]>().default([]),
   comments: text("comments"),
   status: varchar("status", { length: 20 }).notNull().default("pending"), // pending, approved, rejected
-  reviewedBy: uuid("reviewed_by"),
+  reviewedBy: uuid("reviewed_by").references(() => users.id),
   reviewedAt: timestamp("reviewed_at"),
   reviewComments: text("review_comments"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -84,7 +84,7 @@ export const actuals = pgTable("actuals", {
 
 export const milestones = pgTable("milestones", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  kpiId: uuid("kpi_id").notNull(),
+  kpiId: uuid("kpi_id").notNull().references(() => kpis.id),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
   targetDate: timestamp("target_date").notNull(),
@@ -101,12 +101,12 @@ export const alerts = pgTable("alerts", {
   severity: varchar("severity", { length: 20 }).notNull(), // low, medium, high, critical
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description").notNull(),
-  kpiId: uuid("kpi_id"),
-  departmentId: uuid("department_id"),
-  triggeredBy: uuid("triggered_by"),
+  kpiId: uuid("kpi_id").references(() => kpis.id),
+  departmentId: uuid("department_id").references(() => departments.id),
+  triggeredBy: uuid("triggered_by").references(() => users.id),
   isRead: boolean("is_read").notNull().default(false),
   isResolved: boolean("is_resolved").notNull().default(false),
-  resolvedBy: uuid("resolved_by"),
+  resolvedBy: uuid("resolved_by").references(() => users.id),
   resolvedAt: timestamp("resolved_at"),
   metadata: jsonb("metadata"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -114,7 +114,7 @@ export const alerts = pgTable("alerts", {
 
 export const auditLogs = pgTable("audit_logs", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: uuid("user_id").notNull(),
+  userId: uuid("user_id").notNull().references(() => users.id),
   action: varchar("action", { length: 100 }).notNull(), // create, update, delete, submit, approve, reject
   resourceType: varchar("resource_type", { length: 50 }).notNull(), // kpi, target, actual, user
   resourceId: uuid("resource_id").notNull(),
@@ -127,11 +127,11 @@ export const auditLogs = pgTable("audit_logs", {
 
 export const notifications = pgTable("notifications", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: uuid("user_id").notNull(),
+  userId: uuid("user_id").notNull().references(() => users.id),
   type: varchar("type", { length: 50 }).notNull(), // email, teams, slack, in_app
   title: varchar("title", { length: 255 }).notNull(),
   message: text("message").notNull(),
-  alertId: uuid("alert_id"),
+  alertId: uuid("alert_id").references(() => alerts.id),
   isRead: boolean("is_read").notNull().default(false),
   sentAt: timestamp("sent_at"),
   deliveryStatus: varchar("delivery_status", { length: 20 }).default("pending"), // pending, sent, failed
